@@ -1,3 +1,6 @@
+use std::io;
+use std::process;
+
 struct Interpreter {
     register: Vec<String>,
     src: Vec<char>,
@@ -15,9 +18,28 @@ impl Interpreter {
         while !self.src.is_empty() {
             match self.src[0] {
                 '=' => self.parse_assignment(),
+                '#' => self.parse_stdout(),
                 _ => unimplemented!(),
             }
         }
+    }
+
+    fn parse_stdout(&mut self) {
+        self.consume('<');
+        let mut idx = String::new();
+
+        while self.src[0] != '>' {
+            if !self.src[0].is_digit(10) {
+                std::process::exit(1);
+            }
+
+            idx.push(self.src.remove(0));
+        }
+
+        self.expect('>');
+        let idx = idx.parse::<usize>().unwrap();
+
+        print!("{}", self.register[idx - 1])
     }
 
     fn parse_assignment(&mut self) {
@@ -26,6 +48,9 @@ impl Interpreter {
         let mut val = String::new();
 
         while self.src[0] != ']' {
+            if !self.src[0].is_digit(10) {
+                std::process::exit(1);
+            }
             idx.push(self.src.remove(0));
         }
 
@@ -51,19 +76,22 @@ impl Interpreter {
         }
     }
 
-    fn consume(&mut self, c: char) {
+    fn consume(&mut self, c: char) -> char {
         self.src.remove(0);
         if self.src[0] != c {
             std::process::exit(1)
         } else {
-            self.src.remove(0);
+            self.src.remove(0)
         }
     }
 }
 
 fn main() {
-    let code = "=[1]\"hello\"";
-    let mut qivol = Interpreter::new(32, code);
+    let mut buffer = String::new();
+    io::stdin()
+        .read_line(&mut buffer)
+        .expect("failed to read input");
+    let mut qivol = Interpreter::new(32, &buffer.trim());
 
     qivol.run_code();
 }
