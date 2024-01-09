@@ -36,7 +36,7 @@ impl Interpreter {
         }
 
         self.expect(']');
-        self.expect('<');
+        self.expect('>');
 
         let mut times = match self.src[0] {
             '[' => {
@@ -73,7 +73,7 @@ impl Interpreter {
 
         while self.src[0] != ']' {
             if !self.src[0].is_digit(10) {
-                std::process::exit(1)
+                std::process::exit(1);
             }
 
             reg_val.push(self.src.remove(0));
@@ -85,10 +85,10 @@ impl Interpreter {
     }
 
     fn parse_reg_access(&mut self) -> String {
-        self.consume('[');
+        self.consume('<');
         let mut idx = String::new();
 
-        while self.src[0] != ']' {
+        while self.src[0] != '>' {
             if !self.src[0].is_digit(10) {
                 std::process::exit(1);
             }
@@ -148,6 +148,7 @@ impl Interpreter {
 
     fn expect(&mut self, c: char) {
         if self.src[0] != c {
+            println!("expected '{}' but found {}", c, self.src[0]);
             std::process::exit(1)
         } else {
             self.src.remove(0);
@@ -157,6 +158,7 @@ impl Interpreter {
     fn consume(&mut self, c: char) -> char {
         self.src.remove(0);
         if self.src[0] != c {
+            println!("expected '{}' but found {}", c, self.src[0]);
             std::process::exit(1)
         } else {
             self.src.remove(0)
